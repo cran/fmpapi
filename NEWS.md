@@ -1,4 +1,15 @@
-# fmpapi (development version)
+# fmpapi 0.2.1
+
+## Improvements
+
+- Added error message in case of missing API key. 
+- Pruned documentation of internal functions. 
+
+## Bug fixes
+
+- Fixed parsing of error messages for missing API keys.
+
+# fmpapi 0.2.0
 
 ## Improvements
 

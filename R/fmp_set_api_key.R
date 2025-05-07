@@ -18,7 +18,8 @@
 #' }
 #'
 #'
-fmp_set_api_key <- function() { # nocov start
+fmp_set_api_key <- function() {
+  # nocov start
   fmp_api_key <- prompt_api_key()
   location_choice <- prompt_location()
 
@@ -91,6 +92,7 @@ fmp_set_api_key <- function() { # nocov start
 }
 
 #' @keywords internal
+#' @noRd
 prompt_api_key <- function(
   api_key = readline(prompt = "Enter your FMP API key: ")
 ) {
@@ -98,31 +100,40 @@ prompt_api_key <- function(
 }
 
 #' @keywords internal
-prompt_location <- function(location = readline(
-  prompt = paste0(
-    "Where do you want to store the .Renviron file? ",
-    "Enter 'project' for project directory or 'home' for home directory: "
+#' @noRd
+prompt_location <- function(
+  location = readline(
+    prompt = paste0(
+      "Where do you want to store the .Renviron file? ",
+      "Enter 'project' for project directory or 'home' for home directory: "
+    )
   )
-)) {
+) {
   location
 }
 
 #' @keywords internal
-prompt_gitignore <- function(gitignore = readline(
-  prompt = paste0(
-    "Do you want to add .Renviron to .gitignore? ",
-    "It is highly recommended! Enter 'yes' or 'no': "
+#' @noRd
+prompt_gitignore <- function(
+  gitignore = readline(
+    prompt = paste0(
+      "Do you want to add .Renviron to .gitignore? ",
+      "It is highly recommended! Enter 'yes' or 'no': "
+    )
   )
-)) {
+) {
   gitignore
 }
 
 #' @keywords internal
-prompt_overwrite <- function(overwrite = readline(
-  prompt = paste0(
-    "API key already exist. Do you want to overwrite it? ",
-    "Enter 'yes' or 'no': "
+#' @noRd
+prompt_overwrite <- function(
+  overwrite = readline(
+    prompt = paste0(
+      "API key already exist. Do you want to overwrite it? ",
+      "Enter 'yes' or 'no': "
+    )
   )
-)) {
+) {
   overwrite
 } # nocov end

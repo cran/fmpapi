@@ -1,4 +1,3 @@
-
 # Validation tests --------------------------------------------------------
 
 test_that("fmp_get validates limit correctly", {
@@ -38,49 +37,51 @@ test_that("fmp_get validates symbol input", {
   )
 })
 
-
 # Request handling tests --------------------------------------------------
 
 test_that("fmp_get parses response without symbol inputs", {
-
-  example_body <- c(
-    '[{
-    "symbol": "ABCX.US",
-    "name": "AlphaBeta Corporation",
-    "price": 152.35,
-    "exchange": "New York Stock Exchange",
-    "exchangeShortName": "NYSE",
-    "type": "stock"
+  example_body <- '[
+    {
+      "symbol": "ABCX.US",
+      "name": "AlphaBeta Corporation",
+      "price": 152.35,
+      "exchange": "New York Stock Exchange",
+      "exchangeShortName": "NYSE",
+      "type": "stock"
     },
     {
-    "symbol": "GLOTECH.TO",
-    "name": "Global Technologies Inc.",
-    "price": 88.50,
-    "exchange": "Toronto Stock Exchange",
-    "exchangeShortName": "TSX",
-    "type": "stock"
-    }]'
-  )
+      "symbol": "GLOTECH.TO",
+      "name": "Global Technologies Inc.",
+      "price": 88.50,
+      "exchange": "Toronto Stock Exchange",
+      "exchangeShortName": "TSX",
+      "type": "stock"
+    }
+  ]'
 
   my_mock <- function(req) {
     response(
-      status_code = 200,
-      body = charToRaw(example_body),
-      headers = list("Content-Type" = "application/json")
+      status_code = 200L,
+      headers = list("Content-Type" = "application/json"),
+      body = charToRaw(example_body)
     )
   }
 
-  with_mocked_responses(
-    my_mock,
-    result <- fmp_get(resource = "stock/list")
+  with_mocked_bindings(
+    validate_api_key = function(...) invisible(TRUE),
+    with_mocked_responses(
+      my_mock,
+      {
+        result <- fmp_get(resource = "stock/list")
+        expect_type(result, "list")
+        expect_equal(nrow(result), 2)
+        expect_equal(result$symbol[1], "ABCX.US")
+      }
+    )
   )
-
-  expect_type(result, "list")
-
 })
 
 test_that("fmp_get parses response with symbol inputs", {
-
   example_body <- c(
     '{
     "date": "2024-09-28",
@@ -103,13 +104,16 @@ test_that("fmp_get parses response with symbol inputs", {
     )
   }
 
-  with_mocked_responses(
-    my_mock,
-    result <- fmp_get(resource = "balance-sheet-statement", "AAPL")
+  with_mocked_bindings(
+    validate_api_key = function(...) invisible(TRUE),
+    with_mocked_responses(
+      my_mock,
+      {
+        result <- fmp_get(resource = "balance-sheet-statement", "AAPL")
+        expect_type(result, "list")
+      }
+    )
   )
-
-  expect_type(result, "list")
-
 })
 
 test_that("perform_request throws error on non-200 response", {
@@ -121,11 +125,16 @@ test_that("perform_request throws error on non-200 response", {
     )
   }
 
-  with_mocked_responses(
-    my_mock,
-    expect_error(
-      perform_request(resource = "invalid-resource", params = list()),
-      "Invalid request"
+  with_mocked_bindings(
+    validate_api_key = function(...) invisible(TRUE),
+    with_mocked_responses(
+      my_mock,
+      {
+        expect_error(
+          perform_request(resource = "invalid-resource", params = list()),
+          "Invalid request"
+        )
+      }
     )
   )
 })
@@ -139,11 +148,16 @@ test_that("perform_request handles empty responses", {
     )
   }
 
-  with_mocked_responses(
-    my_mock,
-    expect_error(
-      perform_request(resource = "invalid-resource", params = list()),
-      "Response body is empty."
+  with_mocked_bindings(
+    validate_api_key = function(...) invisible(TRUE),
+    with_mocked_responses(
+      my_mock,
+      {
+        expect_error(
+          perform_request(resource = "invalid-resource", params = list()),
+          "Response body is empty."
+        )
+      }
     )
   )
 })
@@ -152,12 +166,15 @@ test_that("perform_request handles empty responses", {
 
 test_that("convert_column_names converts names to snake_case", {
   df <- data.frame(
-    calendarYear = 2023, Date = "2023-12-31", SymbolName = "AAPL"
+    calendarYear = 2023,
+    Date = "2023-12-31",
+    SymbolName = "AAPL"
   )
   df_converted <- convert_column_names(df)
 
   expect_equal(
-    names(df_converted), c("calendar_year", "date", "symbol_name")
+    names(df_converted),
+    c("calendar_year", "date", "symbol_name")
   )
 })
 

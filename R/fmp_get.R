@@ -76,7 +76,6 @@ fmp_get <- function(
   api_version = "v3",
   snake_case = TRUE
 ) {
-
   if (!is.null(symbol)) {
     validate_symbol(symbol)
     resource_processed <- paste0(resource, "/", symbol)
@@ -93,7 +92,9 @@ fmp_get <- function(
   }
 
   data_raw <- perform_request(
-    resource_processed, params,  api_version =  api_version
+    resource_processed,
+    params,
+    api_version = api_version
   )
 
   data_processed <- data_raw |>
@@ -125,14 +126,13 @@ fmp_get <- function(
 #' @return A parsed JSON response from the FMP API.
 #'
 #' @keywords internal
-#'
+#' @noRd
 perform_request <- function(
   resource,
   params,
   base_url = "https://financialmodelingprep.com/api/",
   api_version = "v3"
 ) {
-
   req <- create_request(base_url, api_version, resource, params)
 
   resp <- req |>
@@ -140,7 +140,7 @@ perform_request <- function(
 
   if (resp$status_code != 200) {
     cli::cli_abort(
-      resp_body_json(resp)
+      resp_body_json(resp)$`Error Message`
     )
   } else {
     body <- resp_body_json(resp)
@@ -149,11 +149,13 @@ perform_request <- function(
 
     body
   }
-
 }
 
 #' @keywords internal
+#' @noRd
 create_request <- function(base_url, api_version, resource, params) {
+  validate_api_key()
+
   request(base_url) |>
     req_url_path_append(api_version) |>
     req_url_path_append(resource) |>
@@ -165,6 +167,21 @@ create_request <- function(base_url, api_version, resource, params) {
 }
 
 #' @keywords internal
+#' @noRd
+validate_api_key <- function() {
+  # nocov start
+  if (Sys.getenv("FMP_API_KEY") == "") {
+    cli::cli_abort(
+      "Please set an API key using `fmp_set_api_key()`"
+    )
+  } else {
+    invisible(TRUE)
+  }
+  # nocov end
+}
+
+#' @keywords internal
+#' @noRd
 validate_symbol <- function(symbol) {
   if (length(symbol) != 1) {
     cli::cli_abort(
@@ -174,6 +191,7 @@ validate_symbol <- function(symbol) {
 }
 
 #' @keywords internal
+#' @noRd
 validate_period <- function(period) {
   if (!period %in% c("annual", "quarter")) {
     cli::cli_abort(
@@ -183,6 +201,7 @@ validate_period <- function(period) {
 }
 
 #' @keywords internal
+#' @noRd
 validate_limit <- function(limit) {
   if (!is.numeric(limit) || limit %% 1L != 0 || limit < 1L) {
     cli::cli_abort("{.arg limit} must be an integer larger than 0.")
@@ -190,6 +209,7 @@ validate_limit <- function(limit) {
 }
 
 #' @keywords internal
+#' @noRd
 validate_body <- function(body) {
   if (length(body) == 0) {
     cli::cli_abort(
@@ -205,7 +225,7 @@ validate_body <- function(body) {
 #' @return The data frame with its column names converted to snake_case.
 #'
 #' @keywords internal
-#'
+#' @noRd
 convert_column_names <- function(df) {
   new_names <- gsub("([a-z])([A-Z])", "\\1_\\2", names(df))
   new_names <- tolower(new_names)
@@ -220,16 +240,18 @@ convert_column_names <- function(df) {
 #' @return A data frame with updated column types.
 #'
 #' @keywords internal
-#'
+#' @noRd
 convert_column_types <- function(df) {
   df |>
-    mutate(across(contains("calendarYear"), as.integer),
-           across(c(contains("Date"), contains("date")), function(x) {
-             posix_converted <- as.POSIXct(x, tz = "UTC")
-             has_time <- any(format(posix_converted, "%H:%M:%S") != "00:00:00")
-             if (!has_time) {
-               return(as.Date(x))
-             }
-             return(posix_converted)
-           }))
+    mutate(
+      across(contains("calendarYear"), as.integer),
+      across(c(contains("Date"), contains("date")), function(x) {
+        posix_converted <- as.POSIXct(x, tz = "UTC")
+        has_time <- any(format(posix_converted, "%H:%M:%S") != "00:00:00")
+        if (!has_time) {
+          return(as.Date(x))
+        }
+        posix_converted
+      })
+    )
 }

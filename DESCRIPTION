@@ -1,7 +1,7 @@
 Package: fmpapi
 Type: Package
 Title: Flexible Client for the 'Financial Modeling Prep' API
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: 
     person(given = "Christoph",
            family = "Scheuch",
@@ -24,9 +24,9 @@ BugReports: https://github.com/tidy-finance/r-fmpapi/issues
 Config/testthat/edition: 3
 Language: en-US
 NeedsCompilation: no
-Packaged: 2024-12-18 18:37:47 UTC; krise
-Author: Christoph Scheuch [aut, cre, cph]
-    (<https://orcid.org/0009-0004-0423-6819>)
+Packaged: 2025-05-07 19:10:54 UTC; krise
+Author: Christoph Scheuch [aut, cre, cph] (ORCID:
+    <https://orcid.org/0009-0004-0423-6819>)
 Maintainer: Christoph Scheuch <christoph@tidy-intelligence.com>
 Repository: CRAN
-Date/Publication: 2024-12-19 20:40:05 UTC
+Date/Publication: 2025-05-07 19:20:08 UTC
