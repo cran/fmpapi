@@ -1,3 +1,9 @@
+# fmpapi 1.0.0
+
+## Improvements
+
+- Add support for and default to stable API version. 
+
 # fmpapi 0.2.1
 
 ## Improvements
