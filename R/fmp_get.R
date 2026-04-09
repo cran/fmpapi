@@ -185,7 +185,11 @@ create_request <- function(base_url, api_version, resource, params) {
   request(base_url) |>
     req_url_path_append(api_version) |>
     req_url_path_append(resource) |>
-    req_url_query(apikey = Sys.getenv("FMP_API_KEY"), !!!params) |>
+    req_url_query(
+      apikey = Sys.getenv("FMP_API_KEY"),
+      !!!params,
+      .multi = "comma"
+    ) |>
     req_user_agent(
       "fmpapi R package (https://github.com/tidy-finance/r-fmpapi)"
     ) |>
@@ -238,7 +242,7 @@ validate_limit <- function(limit) {
 #' @noRd
 validate_body <- function(body) {
   if (length(body) == 0) {
-    cli::cli_abort(
+    cli::cli_warn(
       "Response body is empty. Check your resource and parameter specification."
     )
   }
@@ -272,8 +276,15 @@ convert_column_types <- function(df) {
     mutate(
       across(contains("calendarYear"), as.integer),
       across(c(contains("Date"), contains("date")), function(x) {
-        posix_converted <- as.POSIXct(x, tz = "UTC")
-        has_time <- any(format(posix_converted, "%H:%M:%S") != "00:00:00")
+        x[x == ""] <- NA_character_
+        posix_converted <- as.POSIXct(x, tz = "UTC", optional = TRUE)
+        if (all(is.na(posix_converted))) {
+          return(as.Date(rep(NA, length(x))))
+        }
+        has_time <- any(
+          format(posix_converted, "%H:%M:%S") != "00:00:00",
+          na.rm = TRUE
+        )
         if (!has_time) {
           return(as.Date(x))
         }
